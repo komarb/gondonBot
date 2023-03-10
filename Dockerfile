@@ -10,8 +10,6 @@ RUN go mod download
 
 COPY . .
 
-RUN chmod a+xr yt-dlp
-
 RUN apt -y update && apt -y install libopus-dev
 
 RUN CGO_ENABLED=1 CC=musl-gcc go build --ldflags '-linkmode external -extldflags=-static' -o ./app/gondon

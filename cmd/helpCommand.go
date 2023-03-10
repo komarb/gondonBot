@@ -6,7 +6,7 @@ import (
 )
 
 func HelpCommand(ctx bot.Context) error {
-	embed := bot.NewPlayerEmbed("GondonPlayer", "TRACK", "03:45", "@125")
+	embed := bot.NewPlayerEmbed("GondonPlayer", "TEST", "01:23", ctx.User.Mention())
 	msgComplex := discordgo.MessageSend{Content: "TESTING", Embed: embed, Components: PlayerButtons}
 	ctx.SendComplex(&msgComplex)
 	return nil

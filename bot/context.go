@@ -27,7 +27,7 @@ type Context struct {
 
 func NewContext(discord *discordgo.Session, guild *discordgo.Guild, textChannel *discordgo.Channel,
 	user *discordgo.User, message *discordgo.MessageCreate, conf *Config, cmdHandler *CommandHandler,
-	sessions *SessionManager, playerMessages *PlayerMessages, youtube *Youtube, textsColl *mongo.Collection, imgsColl *mongo.Collection, cursesColl *mongo.Collection, bullyingToday BullyingToday) *Context {
+	sessions *SessionManager, playerMessages *PlayerMessages, youtube *Youtube, textsColl *mongo.Collection, imgsColl *mongo.Collection, cursesColl *mongo.Collection) *Context {
 	ctx := new(Context)
 	ctx.Discord = discord
 	ctx.Guild = guild
@@ -42,7 +42,6 @@ func NewContext(discord *discordgo.Session, guild *discordgo.Guild, textChannel 
 	ctx.TextsColl = textsColl
 	ctx.ImgsColl = imgsColl
 	ctx.CursesColl = cursesColl
-	ctx.BullyingToday = bullyingToday
 	return ctx
 }
 

@@ -123,7 +123,7 @@ func applicationCommandsHandler(discord *discordgo.Session, i *discordgo.Interac
 	if err != nil {
 		log.WithFields(log.Fields{"error": err}).Fatal("Can't get discord channel, shutting down...")
 	}
-	ctx := bot.NewContext(discord, guild, channel, user, &discordgo.MessageCreate{}, cfg, CmdHandler, Sessions, PlayerMessages, youtube, textsColl, imgsColl, cursesColl, bot.BullyingToday{})
+	ctx := bot.NewContext(discord, guild, channel, user, &discordgo.MessageCreate{}, cfg, CmdHandler, Sessions, PlayerMessages, youtube, textsColl, imgsColl, cursesColl)
 	switch i.Type {
 	case discordgo.InteractionApplicationCommand:
 		if handler, ok := cmd.MemCommandsHandlers[i.ApplicationCommandData().Name]; ok {
@@ -153,7 +153,7 @@ func textCommandsHandler(discord *discordgo.Session, message *discordgo.MessageC
 	if err != nil {
 		log.WithFields(log.Fields{"error": err}).Fatal("Can't get discord guild, shutting down...")
 	}
-	ctx := bot.NewContext(discord, guild, channel, user, message, cfg, CmdHandler, Sessions, PlayerMessages, youtube, textsColl, imgsColl, cursesColl, bot.BullyingToday{})
+	ctx := bot.NewContext(discord, guild, channel, user, message, cfg, CmdHandler, Sessions, PlayerMessages, youtube, textsColl, imgsColl, cursesColl)
 
 	_, err = cmd.SaveMessageToDb(message.Message, ctx)
 	if err != nil {
@@ -167,12 +167,12 @@ func textCommandsHandler(discord *discordgo.Session, message *discordgo.MessageC
 	args := strings.Fields(content)
 	cmdName := strings.ToLower(args[0])
 	log.Info(user.Username, message.GuildID, " : ", content)
-	cmd, found := CmdHandler.Get(cmdName)
+	c, found := CmdHandler.Get(cmdName)
 	if !found {
 		return
 	}
 	ctx.Args = args[1:]
-	command := *cmd
+	command := *c
 	err = command(*ctx)
 	if err != nil {
 		ctx.SendMsg("Something went wrong...")
@@ -190,24 +190,6 @@ func checkForRequiredLibraries() {
 		log.WithFields(log.Fields{"error": err}).Fatal("Required library (youtube-dl) is not installed")
 	}
 }
-
-//	func BullyInsert() {
-//		data, err := os.Open("res/curses.txt")
-//
-//		if err != nil {
-//			log.WithFields(log.Fields{"error": err}).Fatal("Can't read config.json file, shutting down...")
-//		}
-//		fileScanner := bufio.NewScanner(data)
-//		fileScanner.Split(bufio.ScanLines)
-//
-//		for fileScanner.Scan() {
-//
-//			_, err := imgsColl.InsertOne(context.TODO(), interface{{Curse: "hello"}})
-//
-//		}
-//
-//		data.Close()
-//	}
 func registerCommands() {
 	// Music
 	CmdHandler.Register("help", cmd.HelpCommand, "Gives you this useful message!")
@@ -219,18 +201,9 @@ func registerCommands() {
 	CmdHandler.Register("mod", cmd.ModCommand, "Makes bot play music different!")
 	CmdHandler.Register("player", cmd.PlayerCommand, "Makes bot send you Player!")
 	CmdHandler.Register("queue", cmd.QueueCommand, "Makes bot queue!")
-
-	// Memes
-	CmdHandler.Register("getallmsg", cmd.GetAllMsgCommand, "Gives you this help message!")
+	//
+	//// Memes
+	//CmdHandler.Register("getallmsg", cmd.GetAllMsgCommand, "Gives you this help message!")
 	CmdHandler.Register("mem", cmd.MemCommand, "Makes bot meme!")
 	CmdHandler.Register("popusk", cmd.PopuskCommand, "Makes bot call someone a curseword!!")
-	//Unused
-	//CmdHandler.Register("add", cmd.AddCommand, "Makes bot add music!")
-	//CmdHandler.Register("getallmsg", cmd.GetAllMsgCommand, "Gives you this help message!")
-	//CmdHandler.Register("join", cmd.JoinCommand, "Makes bot join your channel!")
-	//CmdHandler.Register("leave", cmd.LeaveCommand, "Makes bot leave your channel!")
-	//CmdHandler.Register("yt", cmd.YoutubeCommand, "Makes bot search youtube videos!")
-	//CmdHandler.Register("pick", cmd.PickCommand, "Makes bot pick from queue!")
-	//CmdHandler.Register("play2", cmd.PlayOldCommand, "Makes bot play! (deprecated")
-
 }
