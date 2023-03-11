@@ -11,7 +11,7 @@ type Config struct {
 	ServiceUrl   string `json:"service_url"`
 	BotToken     string `json:"bot_token"`
 	GameStatus   string `json:"game_status"`
-	YtApiKey     string `json:"yt_api_key"`
+	GoogleApiKey string `json:"google_api_key"`
 	DBUri        string `json:"db_uri"`
 	FFmpegStatic string `json:"ffmpeg_static"`
 }
@@ -22,7 +22,7 @@ func GetConfigEnv() *Config {
 	config.ServiceUrl = os.Getenv("GDN_SERVICE_URL")
 	config.BotToken = os.Getenv("GDN_BOT_TOKEN")
 	config.GameStatus = os.Getenv("GDN_GAME_STATUS")
-	config.YtApiKey = os.Getenv("GDN_YOUTUBE_API_KEY")
+	config.GoogleApiKey = os.Getenv("GDN_GOOGLE_API_KEY")
 	config.DBUri = os.Getenv("GDN_DB_URI")
 	config.FFmpegStatic = os.Getenv("GDN_FFMPEG_STATIC")
 	return &config

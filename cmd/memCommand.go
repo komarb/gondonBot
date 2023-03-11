@@ -3,6 +3,7 @@ package cmd
 import (
 	"Gondon/bot"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	log "github.com/sirupsen/logrus"
@@ -12,6 +13,16 @@ import (
 	"net/http"
 	"strings"
 )
+
+type TenorResponse struct {
+	Results []struct {
+		MediaFormats struct {
+			TinyGif struct {
+				Url string `json:"url"`
+			} `json:"tinygif"`
+		} `json:"media_formats"`
+	} `json:"results"`
+}
 
 var (
 	MemCommands = []*discordgo.ApplicationCommand{
@@ -53,6 +64,7 @@ func MemCommand(ctx bot.Context) error {
 	}
 	var url string
 	var imgFormat string
+	var tenorGif bool
 	if ctx.Message.ReferencedMessage == nil {
 		url, _ = getRandomImage(&ctx)
 		imgFormat = url[strings.LastIndex(url, ".")+1:]
@@ -62,10 +74,11 @@ func MemCommand(ctx bot.Context) error {
 	} else if len(ctx.Message.ReferencedMessage.Embeds) != 0 {
 		url = ctx.Message.ReferencedMessage.Embeds[0].URL
 		imgFormat = "gif"
+		tenorGif = true
 	} else {
 		return nil
 	}
-	imgBytes, err := downloadFile(url)
+	imgBytes, err := downloadFile(url, imgFormat, ctx.Conf.GoogleApiKey, tenorGif)
 
 	if err != nil {
 		return fmt.Errorf("pic download failed")
@@ -121,7 +134,14 @@ func getRandomImage(ctx *bot.Context) (string, error) {
 	return results[0]["url"].(string), nil
 }
 
-func downloadFile(URL string) (*[]byte, error) {
+func downloadFile(URL string, imgFormat string, apiKey string, tenorGif bool) (*[]byte, error) {
+	var err error
+	if tenorGif {
+		URL, err = getTenorGifURL(URL, apiKey)
+		if err != nil {
+			return nil, fmt.Errorf("can't get tenor gif url: %s", err)
+		}
+	}
 	response, err := http.Get(URL)
 	if err != nil {
 		return nil, fmt.Errorf("can't get from url")
@@ -137,6 +157,35 @@ func downloadFile(URL string) (*[]byte, error) {
 		return nil, fmt.Errorf("can't read body")
 	}
 	return &body, nil
+}
+
+func getTenorGifURL(URL string, apiKey string) (string, error) {
+	log.Info("GETTENOFGIG")
+	var resp = TenorResponse{}
+	URL = processTenorURL(URL, apiKey)
+	log.Info(URL)
+	response, err := http.Get(URL)
+	if err != nil {
+		return "", fmt.Errorf("can't get from url")
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return "", fmt.Errorf("non 200 response")
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return "", fmt.Errorf("can't read body")
+	}
+	if err := json.Unmarshal(body, &resp); err != nil {
+		return "", fmt.Errorf("can't unmarshal body")
+	}
+	return resp.Results[0].MediaFormats.TinyGif.Url, nil
+}
+
+func processTenorURL(URL string, apiKey string) string {
+	tenorId := URL[strings.LastIndex(URL, "-")+1:]
+	return fmt.Sprintf("https://tenor.googleapis.com/v2/posts?key=%s&client_key=gondonBot&ids=%s&media_filter=tinygif", apiKey, tenorId)
 }
 
 func SaveMessageToDb(msg *discordgo.Message, ctx *bot.Context) (int, error) {

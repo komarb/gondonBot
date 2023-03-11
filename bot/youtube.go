@@ -70,7 +70,7 @@ func (youtube Youtube) buildUrl(query string) (*string, error) {
 	params.Add("q", query)
 	params.Add("part", "snippet")
 	params.Add("type", "video")
-	params.Add("key", youtube.Cfg.YtApiKey)
+	params.Add("key", youtube.Cfg.GoogleApiKey)
 	address.RawQuery = params.Encode()
 	str := address.String()
 	return &str, nil
