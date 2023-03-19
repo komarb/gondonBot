@@ -20,16 +20,16 @@ var cursesLoaded = false
 
 func PopuskCommand(ctx bot.Context) error {
 	users := getUsersInGuild(&ctx)
+	log.Info(users)
 	_, _, day := time.Now().Date()
 	if !cursesLoaded {
 		loadCurses(ctx.CursesColl)
 		cursesLoaded = true
 	}
-
 	if popuskHistory[ctx.Guild.ID].Day != day {
 		popusk := bot.BullyingToday{}
 		rand.Seed(time.Now().UnixNano())
-		popusk.UserID = users[rand.Intn(len(users)-1)].ID
+		popusk.UserID = users[rand.Intn(len(users))].ID
 		popusk.Day = day
 		curse, err := getRandomBullying(&ctx)
 		if err != nil {
